@@ -6,6 +6,7 @@
 //
 
 #import <AudioToolbox/AudioToolbox.h>
+#include "/Users/sergo/Downloads/CoreAudioUtilityClasses/CoreAudio/PublicUtility/CARingBuffer.h"
 
 // #define PART_II
 
@@ -13,17 +14,29 @@
 // 8.3
 typedef struct MyAUGraphPlayer
 {
+    AudioStreamBasicDescription streamFormat;
+    
+    AUGraph graph;
+    AudioUnit inputUnit;
+    AudioUnit outputUnit;
 #ifdef PART_II
     //8.23
 #else
 #endif
-}
+    
+    AudioBufferList *inputBuffer;
+    CARingBuffer *ringBuffer;
+    
+    Float64 firstInputSampleTime;
+    Float64 firstOutputSampleTime;
+    Float64 inToOutSampleTimeOffer;
+} MyAUGraphPlayer;
 
 #pragma mark - render procs -
 // 8.15 - 8.18
 // 8.21 - 8.22
 
-#pragme mark - utility functions
+#pragma mark - utility functions
 static void CheckError(OSStatus error, const char *operation)
 {
     if (error == noErr) return;
@@ -77,7 +90,7 @@ int main(int argc, const char * argv[]) {
 #endif
     
     // Start playing
-    CheckError(AudioOuputUnitStart(player.inputUnit), "AudioOuputUnitStart failed");
+    CheckError(AudioOutputUnitStart(player.inputUnit), "AudioOuputUnitStart failed");
     CheckError(AUGraphStart(player.graph), "AUGraphStart");
     // And wait
     printf("Capturing, press <return> to stop:\n");
@@ -95,3 +108,4 @@ cleanup:
     }
     return 0;
 }
+

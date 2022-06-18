@@ -11,6 +11,7 @@
 		353B4345285AE4D900AC2F92 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 353B4342285AE4D900AC2F92 /* AudioUnit.framework */; };
 		353B4346285AE4D900AC2F92 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 353B4343285AE4D900AC2F92 /* AudioToolbox.framework */; };
 		353B4347285AE4D900AC2F92 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 353B4344285AE4D900AC2F92 /* CoreAudio.framework */; };
+		35AE0F85285D82E2005F1342 /* CARingBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 35AE0F83285D82E2005F1342 /* CARingBuffer.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -27,10 +28,12 @@
 
 /* Begin PBXFileReference section */
 		353B4337285AE4CC00AC2F92 /* AUGraphPlayThrough */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = AUGraphPlayThrough; sourceTree = BUILT_PRODUCTS_DIR; };
-		353B433A285AE4CC00AC2F92 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		353B433A285AE4CC00AC2F92 /* main.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; path = main.m; sourceTree = "<group>"; };
 		353B4342285AE4D900AC2F92 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = System/Library/Frameworks/AudioUnit.framework; sourceTree = SDKROOT; };
 		353B4343285AE4D900AC2F92 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		353B4344285AE4D900AC2F92 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
+		35AE0F83285D82E2005F1342 /* CARingBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CARingBuffer.cpp; path = ../../../Downloads/CoreAudioUtilityClasses/CoreAudio/PublicUtility/CARingBuffer.cpp; sourceTree = "<group>"; };
+		35AE0F84285D82E2005F1342 /* CARingBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CARingBuffer.h; path = ../../../Downloads/CoreAudioUtilityClasses/CoreAudio/PublicUtility/CARingBuffer.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -50,6 +53,7 @@
 		353B432E285AE4CC00AC2F92 = {
 			isa = PBXGroup;
 			children = (
+				35AE0F7D285D7D6F005F1342 /* Utilities */,
 				353B4339285AE4CC00AC2F92 /* AUGraphPlayThrough */,
 				353B4338285AE4CC00AC2F92 /* Products */,
 				353B4341285AE4D900AC2F92 /* Frameworks */,
@@ -80,6 +84,15 @@
 				353B4344285AE4D900AC2F92 /* CoreAudio.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		35AE0F7D285D7D6F005F1342 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				35AE0F83285D82E2005F1342 /* CARingBuffer.cpp */,
+				35AE0F84285D82E2005F1342 /* CARingBuffer.h */,
+			);
+			path = Utilities;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -140,6 +153,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				353B433B285AE4CC00AC2F92 /* main.m in Sources */,
+				35AE0F85285D82E2005F1342 /* CARingBuffer.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
