@@ -125,8 +125,12 @@ void CreateInputUnit(MyAUGraphPlayer *player) {
     
     UInt32 disableFlag = 0;
     UInt32 enableFlag = 1;
-    AudioUnitScope outputBus = 0;
-    AudioUnitScope inputBus = 1;
+    AudioUnitElement outputBus = 0;
+    AudioUnitElement inputBus = 1;
+    
+    CheckError(AudioComponentInstanceNew(comp, &player->inputUnit),
+              "Couldn't open component for inputUnit");
+    
     CheckError(AudioUnitSetProperty(player->inputUnit,
                                     kAudioOutputUnitProperty_EnableIO,
                                     kAudioUnitScope_Input,
@@ -147,7 +151,7 @@ void CreateInputUnit(MyAUGraphPlayer *player) {
     AudioObjectPropertyAddress defaultDeviceProperty;
     defaultDeviceProperty.mSelector = kAudioHardwarePropertyDefaultInputDevice;
     defaultDeviceProperty.mScope = kAudioObjectPropertyScopeGlobal;
-    defaultDeviceProperty.mElement = kAudioObjectPropertyElementMaster;
+    defaultDeviceProperty.mElement = kAudioObjectPropertyElementMain;
     
     CheckError(AudioObjectGetPropertyData(kAudioObjectSystemObject,
                                           &defaultDeviceProperty,
@@ -303,7 +307,6 @@ int main(int argc, const char * argv[]) {
     
     // Create the input unit
     CreateInputUnit(&player);
-    
     // Build a graph with output unit
     CreateMyAUGraph(&player);
     
