@@ -6,9 +6,10 @@
 //
 
 #import <AudioToolbox/AudioToolbox.h>
+#import <ApplicationServices/ApplicationServices.h>
 #include "/Users/sergo/Downloads/CoreAudioUtilityClasses/CoreAudio/PublicUtility/CARingBuffer.h"
 
-// #define PART_II
+#define PART_II
 
 #pragma mark user-data struct
 typedef struct MyAUGraphPlayer
@@ -19,7 +20,7 @@ typedef struct MyAUGraphPlayer
     AudioUnit inputUnit;
     AudioUnit outputUnit;
 #ifdef PART_II
-    //8.23
+    AudioUnit speechUnit;
 #else
 #endif
     
@@ -63,7 +64,7 @@ OSStatus InputRenderProc(void *inRefCon,
     }
     return inputProcErr;
 }
-// 8.21 - 8.22
+
 OSStatus GraphRenderProc(void *inRefCon,
                          AudioUnitRenderActionFlags *ioActionFlags,
                          const AudioTimeStamp *inTimeStamp,
@@ -109,7 +110,6 @@ static void CheckError(OSStatus error, const char *operation)
     exit(1);
 }
 
-// 8.4 - 8.14
 void CreateInputUnit(MyAUGraphPlayer *player) {
     // Generate a description that matches audio HAL
     AudioComponentDescription inputcd = {0};
@@ -180,14 +180,32 @@ void CreateInputUnit(MyAUGraphPlayer *player) {
                                     &propertySize),
                "Couldn't get ASBD from input unit");
     AudioStreamBasicDescription deviceFormat;
-    CheckError(AudioUnitGetProperty(player->inputUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, inputBus, &deviceFormat, &propertySize), "Couldn't get ASBD from input unit");
+    CheckError(AudioUnitGetProperty(player->inputUnit,
+                                    kAudioUnitProperty_StreamFormat,
+                                    kAudioUnitScope_Input,
+                                    inputBus,
+                                    &deviceFormat,
+                                    &propertySize),
+               "Couldn't get ASBD from input unit");
     player->streamFormat.mSampleRate = deviceFormat.mSampleRate;
     
     propertySize = sizeof(AudioStreamBasicDescription);
-    CheckError(AudioUnitSetProperty(player->inputUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, inputBus, &player->streamFormat, propertySize), "Couldn't set ASBD on input unit");
+    CheckError(AudioUnitSetProperty(player->inputUnit,
+                                    kAudioUnitProperty_StreamFormat,
+                                    kAudioUnitScope_Output,
+                                    inputBus,
+                                    &player->streamFormat,
+                                    propertySize),
+               "Couldn't set ASBD on input unit");
     UInt32 bufferSizeFrames = 0;
     propertySize = sizeof(UInt32);
-    CheckError(AudioUnitGetProperty(player->inputUnit, kAudioDevicePropertyBufferFrameSize, kAudioUnitScope_Global, 0, &bufferSizeFrames, &propertySize), "Couldn't get buffer frame size from input unit");
+    CheckError(AudioUnitGetProperty(player->inputUnit,
+                                    kAudioDevicePropertyBufferFrameSize,
+                                    kAudioUnitScope_Global,
+                                    0,
+                                    &bufferSizeFrames,
+                                    &propertySize),
+               "Couldn't get buffer frame size from input unit");
     UInt32 bufferSizeBytes = bufferSizeFrames * sizeof(Float32);
     // Allocate an AudioBufferList plus enough space for
     // array of AudioBuffers
@@ -214,14 +232,16 @@ void CreateInputUnit(MyAUGraphPlayer *player) {
     callbackStruct.inputProc = InputRenderProc;
     callbackStruct.inputProcRefCon = player;
     
-    CheckError(AudioUnitSetProperty(player->inputUnit, kAudioOutputUnitProperty_SetInputCallback,
+    CheckError(AudioUnitSetProperty(player->inputUnit,
+                                    kAudioOutputUnitProperty_SetInputCallback,
                                     kAudioUnitScope_Global,
                                     0,
                                     &callbackStruct,
                                     sizeof(callbackStruct)),
                "Couldn't set input callback");
     
-    CheckError(AudioUnitInitialize(player->inputUnit), "Couldn't initialize input unit");
+    CheckError(AudioUnitInitialize(player->inputUnit),
+               "Couldn't initialize input unit");
     player->firstInputSampleTime = -1;
     player->inToOutSampleTimeOffset = -1;
     printf("Bottom of CreateInputUnit()\n");
@@ -252,7 +272,105 @@ void CreateMyAUGraph(MyAUGraphPlayer *player)
                               &outputNode),
                "AUGraphAddNode(DefaultOutput) failed");
 #ifdef PART_II
-    // 8.24 - 8.27
+    // Add a mixer to the graph
+    AudioComponentDescription mixercd = {0};
+    mixercd.componentType = kAudioUnitType_Mixer;
+    mixercd.componentSubType = kAudioUnitSubType_StereoMixer;
+    mixercd.componentManufacturer = kAudioUnitManufacturer_Apple;
+    AUNode mixerNode;
+    CheckError(AUGraphAddNode(player->graph,
+                              &mixercd,
+                              &mixerNode),
+               "Adding StereoMixer failed");
+    
+    // Add speech synthesizer to the graph
+    AudioComponentDescription speechcd = {0};
+    speechcd.componentType = kAudioUnitType_Generator;
+    speechcd.componentSubType = kAudioUnitSubType_SpeechSynthesis;
+    speechcd.componentManufacturer = kAudioUnitManufacturer_Apple;
+    AUNode speechNode;
+    CheckError(AUGraphAddNode(player->graph,
+                              &speechcd,
+                              &speechNode),
+               "Adding SpeechSynthesis failed");
+    
+    // Openning the graph opens all contained audio units but does
+    // not allocate any resources yet
+    CheckError(AUGraphOpen(player->graph), "AUGraphOpen failed");
+    
+    // Get the reference to the AudioUnit objs
+    CheckError(AUGraphNodeInfo(player->graph,
+                               outputNode,
+                               NULL,
+                               &player->outputUnit),
+               "NodeInfo for Output failed");
+    CheckError(AUGraphNodeInfo(player->graph,
+                               speechNode,
+                               NULL,
+                               &player->speechUnit),
+               "NodeInfo for SpeechUnit failed");
+    AudioUnit mixerUnit;
+    CheckError(AUGraphNodeInfo(player->graph,
+                               mixerNode,
+                               NULL,
+                               &mixerUnit),
+               "NodeInfo for MixerUnit failed");
+    
+    // ASBD here
+    UInt32 propertySize = sizeof(AudioStreamBasicDescription);
+    CheckError(AudioUnitSetProperty(player->outputUnit,
+                                    kAudioUnitProperty_StreamFormat,
+                                    kAudioUnitScope_Input,
+                                    0,
+                                    &player->streamFormat,
+                                    propertySize),
+               "Couldn't set stream format on output unit");
+    
+    CheckError(AudioUnitSetProperty(mixerUnit,
+                                    kAudioUnitProperty_StreamFormat,
+                                    kAudioUnitScope_Input,
+                                    0,
+                                    &player->streamFormat,
+                                    propertySize),
+               "Couldn't set stream format on mixer unit bus 0");
+    
+    CheckError(AudioUnitSetProperty(mixerUnit,
+                                    kAudioUnitProperty_StreamFormat,
+                                    kAudioUnitScope_Input,
+                                    1,
+                                    &player->streamFormat,
+                                    propertySize),
+               "Couldn't set stream format on mixer unit bus 0");
+    
+    // Connections
+    // Mixer output scope / bus 0 to outputUnit input scope / bus 0
+    // Mixer input scope / bus 0 to render callback
+    // (from ringbuffer, which in turn is from inputUnit)
+    // Mixer input scope / bus 1 to speech unit output scope / bus 0
+    
+    CheckError(AUGraphConnectNodeInput(player->graph,
+                                       mixerNode,
+                                       0,
+                                       outputNode,
+                                       0),
+               "Couldn't connect mixer output 0 to outputNode 0");
+    CheckError(AUGraphConnectNodeInput(player->graph,
+                                       speechNode,
+                                       0,
+                                       mixerNode,
+                                       1),
+               "Couldn't connect mixer input 1 to speech synth output 0");
+    AURenderCallbackStruct callbackStruct;
+    callbackStruct.inputProc = GraphRenderProc;;
+    callbackStruct.inputProcRefCon = player;
+    CheckError(AudioUnitSetProperty(mixerUnit,
+                                   kAudioUnitProperty_SetRenderCallback,
+                                   kAudioUnitScope_Global,
+                                   0,
+                                   &callbackStruct,
+                                   sizeof(callbackStruct)),
+              "Couldn't set render callback on mixer unit");
+    
 #else
     // Opening the graph opens all contained audio units
     // but does not allocate any resources yet
@@ -297,9 +415,23 @@ void CreateMyAUGraph(MyAUGraphPlayer *player)
     player->firstOutputSampleTime = -1;
 }
 
-// 8.29
-
-// 8.2
+#ifdef PART_II
+void PrepareSpeechAU(MyAUGraphPlayer *player)
+{
+    SpeechChannel chan;
+    
+    UInt32 propsize = sizeof(SpeechChannel);
+    CheckError(AudioUnitGetProperty(player->speechUnit,
+                                    kAudioUnitProperty_SpeechChannel,
+                                    kAudioUnitScope_Global,
+                                    0,
+                                    &chan,
+                                    &propsize),
+               "Setting SpeechChannel failed");
+    
+    SpeakCFString(chan, CFSTR("Please purchase as many copies of our Core Audio book as you possibly can"), NULL);
+}
+#endif
 
 int main(int argc, const char * argv[]) {
     
@@ -311,7 +443,8 @@ int main(int argc, const char * argv[]) {
     CreateMyAUGraph(&player);
     
 #ifdef PART_II
-    // 8.28
+    // Configure speech synthesizer
+    PrepareSpeechAU(&player);
 #else
 #endif
     
@@ -327,11 +460,7 @@ cleanup:
     AUGraphStop(player.graph);
     AUGraphUninitialize(player.graph);
     AUGraphClose(player.graph);
-    
-    @autoreleasepool {
-        // insert code here...
-        NSLog(@"Hello, World!");
-    }
+
     return 0;
 }
 

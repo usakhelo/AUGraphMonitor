@@ -12,6 +12,7 @@
 		353B4346285AE4D900AC2F92 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 353B4343285AE4D900AC2F92 /* AudioToolbox.framework */; };
 		353B4347285AE4D900AC2F92 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 353B4344285AE4D900AC2F92 /* CoreAudio.framework */; };
 		35AE0F85285D82E2005F1342 /* CARingBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 35AE0F83285D82E2005F1342 /* CARingBuffer.cpp */; };
+		35AE0F8C286A79A1005F1342 /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 35AE0F8B286A79A1005F1342 /* ApplicationServices.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -34,6 +35,8 @@
 		353B4344285AE4D900AC2F92 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
 		35AE0F83285D82E2005F1342 /* CARingBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CARingBuffer.cpp; path = ../../../Downloads/CoreAudioUtilityClasses/CoreAudio/PublicUtility/CARingBuffer.cpp; sourceTree = "<group>"; };
 		35AE0F84285D82E2005F1342 /* CARingBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CARingBuffer.h; path = ../../../Downloads/CoreAudioUtilityClasses/CoreAudio/PublicUtility/CARingBuffer.h; sourceTree = "<group>"; };
+		35AE0F89286A7748005F1342 /* Speech.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Speech.framework; path = System/Library/Frameworks/Speech.framework; sourceTree = SDKROOT; };
+		35AE0F8B286A79A1005F1342 /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = System/Library/Frameworks/ApplicationServices.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -41,6 +44,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				35AE0F8C286A79A1005F1342 /* ApplicationServices.framework in Frameworks */,
 				353B4347285AE4D900AC2F92 /* CoreAudio.framework in Frameworks */,
 				353B4345285AE4D900AC2F92 /* AudioUnit.framework in Frameworks */,
 				353B4346285AE4D900AC2F92 /* AudioToolbox.framework in Frameworks */,
@@ -79,6 +83,8 @@
 		353B4341285AE4D900AC2F92 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				35AE0F8B286A79A1005F1342 /* ApplicationServices.framework */,
+				35AE0F89286A7748005F1342 /* Speech.framework */,
 				353B4343285AE4D900AC2F92 /* AudioToolbox.framework */,
 				353B4342285AE4D900AC2F92 /* AudioUnit.framework */,
 				353B4344285AE4D900AC2F92 /* CoreAudio.framework */,
